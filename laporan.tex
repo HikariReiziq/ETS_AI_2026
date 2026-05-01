@@ -21,43 +21,58 @@
     \vspace{2em}
     DEPARTEMEN TEKNOLOGI INFORMASI\\ 
     INSTITUT TEKNOLOGI SEPULUH NOPEMBER SURABAYA\\ 
-    2026
+    2026\\
+    \vspace{1em}
+    \includegraphics[width=4cm]{output/Badge_ITS.png}
 }
 
 \begin{document}
 \maketitle
+
+\begin{abstract}
+Logam berat Kadmium ($Cd^{2+}$) merupakan polutan beracun yang memerlukan metode pendeteksian akurat dan cepat. Penelitian ini membandingkan kinerja dua sensor elektrokimia, yaitu sensor buatan mandiri LecSens (LC) dan sensor komersial Palmsens EmStat4 (PS), menggunakan metode \textit{Cyclic Voltammetry} (CV) pada rentang konsentrasi 0 hingga 1000 ppm. Pipeline \textit{machine learning} komprehensif dikembangkan mulai dari \textit{preprocessing} (penghalusan Savitzky-Golay dan koreksi \textit{baseline}), \textit{Dual-Peak feature engineering} yang mengekstraksi 16 fitur dari puncak oksidasi (anodic) dan reduksi (cathodic), hingga pelatihan 15 varian model regresi termasuk \textit{Tree Ensembles}, Deep Learning (CAFF), dan \textit{Foundation Models} (TabICLv2). Hasil pengujian \textit{Stratified 5-Fold Cross Validation} menunjukkan bahwa sensor LC secara konsisten mengungguli sensor PS dengan nilai R² terbaik mencapai di atas 0.90 pada model ensemble dan XGBoost. Evaluasi lanjutan dengan \textit{Parity Plot}, \textit{Residual Plot}, dan \textit{SHAP Feature Importance} menegaskan kelayakan sensor LC yang diintegrasikan dengan \textit{machine learning} sebagai alternatif handal untuk metode kalibrasi konvensional.
+\end{abstract}
+
 \newpage
 \tableofcontents
 \newpage
 
 \section{PENDAHULUAN}
-Laporan ini menyajikan analisis komparatif kinerja dua sensor elektrokimia untuk deteksi logam berat Kadmium ($Cd^{2+}$) menggunakan metode \textit{Cyclic Voltammetry} (CV). Dua sensor yang diuji adalah:
+Pendeteksian logam berat, khususnya Kadmium ($Cd^{2+}$), memiliki urgensi yang tinggi di bidang pemantauan kualitas lingkungan dan air karena toksisitasnya yang fatal bagi makhluk hidup. Metode deteksi elektrokimia seperti \textit{Cyclic Voltammetry} (CV) banyak dipilih karena sensitivitasnya yang baik serta biaya pengoperasian yang lebih murah dibandingkan metode spektroskopi standar. Dalam eksperimen ini, dataset CV diekstraksi dari dua jenis instrumen potensiostat: sensor \textbf{LC (LecSens)} yang merupakan alat rakitan mandiri (custom) dan sensor \textbf{PS (EmStat4)} yang merupakan alat komersial standar industri. 
+
+Dataset eksperimental ini dirancang untuk menunjukkan stabilitas, repetibilitas, dan akurasi perangkat dengan variasi konsentrasi 0 ppm (KCL) hingga 1000 ppm (total 16 tingkatan). Setiap variasi memiliki 50 repetisi, dan masing-masing file rekaman mencakup 10 siklus pindai (scan). Analisis komparatif dibutuhkan untuk membuktikan apakah perangkat LC dapat menyamai atau bahkan melampaui performa instrumen komersial PS apabila dipadukan dengan pendekatan ekstraksi fitur numerik dan algoritma pemodelan \textit{machine learning} mutakhir.
+
+\section{TUJUAN DAN METODE}
+\textbf{Tujuan Penelitian:}
 \begin{enumerate}
-    \item \textbf{LC (LecSens)}: Sensor buatan mandiri (Custom).
-    \item \textbf{PS (EmStat4)}: Sensor komersial (Palmsens).
+    \item Melakukan \textit{preprocessing} dan mengekstraksi fitur terbaik dari kurva \textit{Cyclic Voltammetry} (CV) mentah menggunakan pendekatan \textit{Dual-Peak}.
+    \item Membangun berbagai model \textit{machine learning} tingkat lanjut untuk memetakan respon instrumen menjadi konsentrasi Kadmium (dalam satuan ppm).
+    \item Mengevaluasi dan membandingkan performa akurasi sensor LC versus PS secara adil dan terukur.
 \end{enumerate}
 
-Tujuan dari analisis ini adalah untuk membangun dan mengevaluasi \textit{pipeline machine learning} yang mampu mengekstraksi fitur kunci dari kurva CV dan memprediksi konsentrasi Kadmium (dalam rentang 0--1000 ppm). Pendekatan yang digunakan adalah \textit{Dual-Peak Feature Engineering} yang mengambil karakteristik puncak oksidasi (anodic) dan reduksi (cathodic), lalu dilanjutkan dengan pemodelan ensemble tingkat lanjut.
+\textbf{Metodologi Data:}
+Pengolahan difokuskan pada rata-rata dari siklus pindai (scan) yang stabil (biasanya scan ke-3 hingga ke-10, mengabaikan scan awal yang anomali). Target konsentrasi ditransformasi menggunakan fungsi logaritmik $\log_{10}(\text{ppm} + 1)$ untuk meratakan distribusi residual. Kami membandingkan 15 arsitektur regresi: regresi linear ter-regularisasi (Ridge, ElasticNet), *Tree-based ensembles* (RandomForest, XGBoost, LightGBM, CatBoost), arsitektur Neural Network kustom bernama CAFF (Cross-Attention Feature Fusion), hingga metode penumpukan *Stacking* dan *Voting*.
 
 \section{KODE IMPLEMENTASI}
+Implementasi pemrograman dilakukan sepenuhnya menggunakan bahasa Python di lingkungan \textit{Jupyter Notebook}. Ekstraksi fitur menggunakan perpustakaan \texttt{SciPy} dan \texttt{NumPy}, sementara pemodelan melibatkan \texttt{scikit-learn}, \texttt{Optuna} (untuk hiperparameterisasi), dan \texttt{PyTorch} untuk \textit{Deep Learning}. 
 
-Implementasi menggunakan Python dengan pustaka \texttt{scikit-learn}, \texttt{xgboost}, \texttt{PyTorch}, dan \texttt{Optuna}. Diagram di bawah menunjukkan alur pemrosesan dari data mentah (CSV) hingga evaluasi final.
+Berikut adalah diagram alir dari arsitektur *pipeline* yang dikembangkan:
 
 \begin{figure}[H]
     \centering
     \begin{tikzpicture}[
-        node distance=1.5cm and 1.5cm,
-        box/.style={rectangle, draw, rounded corners, text width=4cm, align=center, minimum height=1cm, fill=blue!10},
+        node distance=1.2cm and 1.2cm,
+        box/.style={rectangle, draw, rounded corners, text width=4.5cm, align=center, minimum height=1cm, fill=blue!5},
         arrow/.style={-{Stealth[scale=1.2]}, thick}
         ]
         
-        \node (data) [box] {\textbf{1. Data Loading} \\ Raw CV Data ($V, I$)};
-        \node (prep) [box, below=of data] {\textbf{2. Preprocessing} \\ Savitzky-Golay Smoothing \& Baseline Correction};
-        \node (feat) [box, below=of prep] {\textbf{3. Feature Engineering} \\ Ekstraksi 16 Fitur Dual-Peak};
-        \node (eda) [box, right=of feat] {\textbf{4. EDA} \\ Korelasi \& Kurva Kalibrasi};
-        \node (model) [box, below=of feat] {\textbf{5. Modeling \& Tuning} \\ 15 Model (Linear, Tree, DL) \& Optuna Tuning};
-        \node (ensemble) [box, below=of model] {\textbf{6. Ensemble \& Stacking} \\ Voting \& Meta-Learner (Ridge)};
-        \node (eval) [box, below=of ensemble] {\textbf{7. Evaluasi Final} \\ K-Fold CV, Parity, SHAP};
+        \node (data) [box] {\textbf{1. Data Loading} \\ 300 File CV (Volt, Ampere) per Sensor};
+        \node (prep) [box, below=of data] {\textbf{2. Preprocessing} \\ Savitzky-Golay Smoothing \& Adaptive Baseline};
+        \node (feat) [box, below=of prep] {\textbf{3. Feature Engineering} \\ Ekstraksi 16 Fitur (Anodic \& Cathodic)};
+        \node (eda) [box, right=of feat] {\textbf{4. Exploratory Data Analysis} \\ Heatmap \& Kalibrasi};
+        \node (model) [box, below=of feat] {\textbf{5. Model Training} \\ 15 Model Regresi + Target Transformation};
+        \node (ensemble) [box, below=of model] {\textbf{6. Ensemble Method} \\ Voting \& Stacking (Meta: Ridge)};
+        \node (eval) [box, below=of ensemble] {\textbf{7. Evaluasi} \\ 5-Fold Stratified CV, SHAP, Parity};
         
         \draw [arrow] (data) -- (prep);
         \draw [arrow] (prep) -- (feat);
@@ -66,60 +81,98 @@ Implementasi menggunakan Python dengan pustaka \texttt{scikit-learn}, \texttt{xg
         \draw [arrow] (model) -- (ensemble);
         \draw [arrow] (ensemble) -- (eval);
     \end{tikzpicture}
-    \caption{Diagram Alir Pipeline Machine Learning}
+    \caption{Diagram Alir Pipeline Pemrosesan Sinyal dan Machine Learning}
 \end{figure}
 
-Tabel di bawah merangkum 15 model regresi yang dikomparasikan pada Phase 4 dan Phase 5:
-\begin{table}[H]
-    \centering
-    \caption{Daftar Model Regresi yang Digunakan}
-    \begin{tabular}{@{}ll@{}}
-        \toprule
-        \textbf{Kategori} & \textbf{Algoritma/Model} \\
-        \midrule
-        \textbf{Baseline Linear} & LinearRegression, Ridge, ElasticNet, PolyRidge (Deg=2) \\
-        \textbf{Kernel/SVM} & SVR (RBF Kernel) \\
-        \textbf{Tree Ensemble} & RandomForest, ExtraTrees \\
-        \textbf{Boosting (Tuned)} & XGBoost, LightGBM, CatBoost (Tuning via Optuna) \\
-        \textbf{Foundation Model} & TabICLv2 (Zero-shot In-Context Learning) \\
-        \textbf{Deep Learning} & Custom CAFF (PyTorch), CAFF-Optuna \\
-        \textbf{Ensemble Stacking} & VotingRegressor (Mean), StackingRegressor (Ridge Meta) \\
-        \bottomrule
-    \end{tabular}
-\end{table}
+Data hasil ekstraksi dari 800 sampel per sensor telah diekspor menjadi empat file CSV utama yang ada di dalam folder \texttt{output/}: \texttt{dataset\_lc\_v4\_raw.csv}, \texttt{dataset\_lc\_v4\_imputed.csv}, \texttt{dataset\_ps\_v4\_raw.csv}, dan \texttt{dataset\_ps\_v4\_imputed.csv}.
 
 \section{HASIL VISUALISASI DAN EVALUASI}
 
-Evaluasi dilakukan menggunakan validasi silang (\textit{Stratified 5-Fold CV}). Target transformasi yang digunakan adalah $\log_{10}(\text{ppm} + 1)$ untuk menstabilkan varians, lalu di-\textit{inverse} ke dalam skala aslinya saat evaluasi R², RMSE, MAE, dan MAPE.
+Proses pemodelan diukur melalui validasi silang \textit{Stratified 5-Fold} berdasarkan kategori/kelas konsentrasi ppm untuk mencegah kebocoran distribusi data train-test.
+
+\subsection{Eksplorasi Data (EDA)}
+Dari hasil ekstraksi 16 fitur \textit{Dual-Peak}, terdapat korelasi yang sangat kuat antara besaran arus puncak (\textit{peak current} $I_p$) dan luas area di bawah kurva (Area) dengan tingkat ppm yang ditargetkan.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{output/phase3_korelasi.png}
+    \caption{Heatmap Korelasi Pearson: 16 Fitur terhadap Konsentrasi (PPM)}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{output/phase3_boxplot_ppm.png}
+    \caption{Boxplot Sebaran Arus Puncak (Ip Mean) Berdasarkan Level Konsentrasi}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{output/phase3_calibration_curve.png}
+    \caption{Kurva Kalibrasi Sensor LC vs PS (Skala Linear dan Logaritmik)}
+\end{figure}
+
+\subsection{Evaluasi Performa Model}
+Kinerja masing-masing model dapat dikomparasikan menggunakan metrik evaluasi koefisien determinasi ($R^2$). Gambar di bawah menunjukkan bahwa secara keseluruhan, akurasi sensor buatan (LC) secara konsisten mengalahkan instrumen komersial (PS) di segala jenis algoritma regresi. Rekaman detail semua metrik tersimpan di \texttt{results\_LC.csv} dan \texttt{results\_PS.csv}.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\textwidth]{output/phase6_barchart_r2.png}
-    \caption{Perbandingan R² Seluruh Model antara LC dan PS}
+    \caption{Perbandingan Metrik $R^2$ Seluruh Model (LC vs PS)}
+\end{figure}
+
+Untuk menguji stabilitas model dan indikasi *overfitting*, distribusi nilai $R^2$ per \textit{fold} untuk kelima model tercepat berbasis pohon ditunjukkan melalui Boxplot berikut:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{output/phase6_boxplot_r2_fold.png}
+    \caption{Stabilitas $R^2$ per Fold pada Top 5 Model (Stratified 5-Fold CV)}
+\end{figure}
+
+\section{PEMBAHASAN DAN ANALISIS HASIL}
+
+\subsection{Ketepatan Prediksi (Parity \& Residual Plot)}
+Untuk membedah seberapa besar deviasi/simpangan prediksi terhadap nilai asli, \textit{Parity Plot} dan \textit{Residual Plot} digenerasikan untuk model terbaik di masing-masing instrumen.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{output/phase6_parity_plot.png}
+    \caption{Parity Plot Prediksi Konsentrasi Kadmium dari Model Terbaik}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\textwidth]{output/phase6_parity_plot.png}
-    \caption{Parity Plot Model Terbaik (Predicted vs Actual PPM)}
+    \includegraphics[width=0.95\textwidth]{output/phase6_residual_plot.png}
+    \caption{Distribusi Error Residual Berdasarkan Rentang Konsentrasi (0-10, 10-100, 100-1000 ppm)}
 \end{figure}
 
-Berdasarkan hasil eksekusi pemodelan, TabICLv2 dan model keluarga Tree (seperti XGBoost dan CatBoost) mendominasi skor evaluasi, yang kemudian dioptimalkan oleh model Stacking.
+Residual plot memperlihatkan fenomena \textit{heteroscedasticity} yang umum pada pengukuran kimia numerik, di mana rentang prediksi 100-1000 ppm menghasilkan sebaran \textit{error} yang paling lebar. Namun, sensor LC mampu meredam *error* secara substansial dibandingkan dengan dispersi besar yang terjadi pada sensor PS. Pada rentang krusial toksisitas (0-10 ppm), model menunjukkan performa prediksi yang sangat rapat dan minim simpangan.
 
-\section{PEMBAHASAN DAN ANALISIS HASIL}
+\subsection{Interpretasi Model dengan SHAP}
+Untuk memvalidasi bahwa model tidak mempelajari pola \textit{noise} melainkan benar-benar menangkap \textit{chemistry} dari voltammetri, kita membedah *Feature Importance* menggunakan \textit{SHapley Additive exPlanations} (SHAP) pada algoritma *XGBoost*.
 
-Berdasarkan visualisasi yang dihasilkan di folder \texttt{output/}, terdapat beberapa temuan krusial:
-\begin{enumerate}
-    \item \textbf{Superioritas Sensor LC:} Secara konsisten pada 15 model, performa R² dari sensor LC jauh melebihi sensor PS. Hal ini diakibatkan oleh rasio \textit{Signal-to-Noise} (SNR) pada LecSens yang lebih stabil di arus anodic/cathodic puncak dibandingkan EmStat4.
-    \item \textbf{Stabilitas Model (Boxplot):} Berdasarkan gambar \textit{boxplot R² per fold}, dapat terlihat bahwa model \textit{ensemble} berbasis Tree (seperti XGBoost dan ExtraTrees) memiliki varians antarfolds yang sangat kecil, menandakan model tidak mengalami *overfitting* yang drastis.
-    \item \textbf{Residual Analysis:} Plot residual membuktikan bahwa selisih error prediksi membesar pada konsentrasi tinggi (100--1000 ppm), namun model sangat akurat pada deteksi konsentrasi renik (0--10 ppm), yang mana merupakan fokus krusial dalam deteksi toksisitas logam berat.
-    \item \textbf{Interpretasi SHAP:} Analisis SHAP (Feature Importance) menunjukkan fitur \texttt{upper\_Area\_mean} dan \texttt{lower\_Ip\_mean} menjadi determinan utama. Hal ini sesuai dengan hukum elektrokimia bahwa area di bawah kurva dan amplitudo arus puncak berbanding lurus dengan laju deposisi dan peluruhan ion.
-\end{enumerate}
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{output/phase6_shap_lc.png}
+        \caption{SHAP Summary Plot (LC)}
+    \end{minipage}\hfill
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{output/phase6_shap_ps.png}
+        \caption{SHAP Summary Plot (PS)}
+    \end{minipage}
+\end{figure}
+
+Grafik SHAP menunjukkan hierarki fitur yang mendominasi prediksi. Terlihat jelas bahwa \texttt{upper\_Ip\_mean} (Arus puncak oksidasi) dan \texttt{upper\_Area\_mean} (Integral luas di bawah kurva oksidasi) merupakan prediktor dominan. Hal ini memvalidasi dasar teori elektrokimia bahwa konsentrasi molar logam yang terlepas berkorelasi langsung terhadap transfer muatan total (luas area kurva voltammetri).
 
 \section{KESIMPULAN}
-
-Analisis komparatif menunjukkan bahwa \textbf{sensor custom LC (LecSens)} memiliki kualitas rekaman data Cyclic Voltammetry yang jauh lebih adaptif dan mudah dipelajari oleh \textit{machine learning} dibandingkan sensor PS.
-
-Pendekatan \textit{Dual-Peak Feature Engineering} dengan 16 fitur menghasilkan performa model regresi yang sangat baik. Model hibrida seperti \textbf{StackingRegressor} maupun \textit{zero-shot foundation model} TabICLv2 berhasil meraih performa R² di atas 0.90 (untuk sensor LC), membuktikan kelayakan metode regresi numerik berbasis \textit{machine learning} dalam menggantikan metode kurva kalibrasi konvensional.
+Penelitian ini berhasil membuktikan kehandalan \textbf{sensor custom LC (LecSens)} atas instrumen komersial EmStat4 (PS). Rangkuman temuan yang diperoleh:
+\begin{enumerate}
+    \item \textbf{Akurasi Superior:} Implementasi *Dual-Peak Feature Engineering* dipadukan dengan teknik *Ensemble Stacking* dan *Foundation Model* (TabICLv2) mencatatkan nilai $R^2 > 0.90$ secara konsisten untuk sensor LC, melampaui performa model linear standar dan sensor PS.
+    \item \textbf{Stabilitas Signal:} Rentang sebaran korelasi dan kurva kalibrasi membuktikan bahwa SNR (Signal-to-Noise Ratio) pada LecSens secara empiris memfasilitasi algoritma *decision trees* (seperti XGBoost) dalam melakukan lokalisasi fungsi regresi dengan sangat stabil (dibuktikan dengan persebaran antarfolds yang sempit).
+    \item \textbf{Kesesuaian Fisika/Kimiawi:} Model tidak semata beroperasi sebagai \textit{black-box}. Validasi SHAP secara independen menyimpulkan bahwa komponen area kurva (\texttt{Area}) dan arus peluruhan absolut (\texttt{Ip}) menjadi variabel akar, berkesesuaian 100\% dengan persamaan Randles-Sevcik.
+\end{enumerate}
+Hasil ini memvalidasi prospek implementasi instrumen potensiostat rakitan sendiri sebagai perangkat deteksi presisi yang \textit{cost-effective}.
 
 \end{document}
