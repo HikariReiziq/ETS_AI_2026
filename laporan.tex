@@ -1,6 +1,7 @@
 \documentclass[12pt, a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
+\usepackage{amsmath}
 \usepackage{hyperref}
 \usepackage{booktabs}
 \usepackage{geometry}
@@ -53,12 +54,12 @@ Dataset yang digunakan dikumpulkan secara sistematis dengan pengulangan tinggi u
 \end{enumerate}
 
 \textbf{Metodologi Pemodelan:}
-Target prediksi berupa nilai konsentrasi ppm awalnya sangat timpang persebarannya (nilai mayoritas di bawah 100 ppm namun melesat hingga 1000 ppm). Oleh karena itu, target di-\textit{transform} terlebih dahulu menggunakan logaritmik $\log_{10}(\text{ppm} + 1)$ untuk meratakan distribusi 	extit{residual} model. Metodologi regresi yang digunakan mencakup 15 arsitektur komparasi: model *baseline* linear, *tree-based ensembles* yang telah di-*tuning* via Optuna\cite{optuna} seperti XGBoost\cite{xgboost} dan CatBoost, arsitektur *Deep Learning* CAFF kustom berbasi atensi (Cross-Attention) menggunakan PyTorch\cite{pytorch}, metode canggih Zero-Shot In-Context Learning melalui TabICLv2\cite{tabicl}, serta penumpukan *stacking* menggunakan meta-learner Ridge.
+Target prediksi berupa nilai konsentrasi ppm awalnya sangat timpang persebarannya (nilai mayoritas di bawah 100 ppm namun melesat hingga 1000 ppm). Oleh karena itu, target di-\textit{transform} terlebih dahulu menggunakan logaritmik $\log_{10}(\text{ppm} + 1)$ untuk meratakan distribusi \textit{residual} model. Metodologi regresi yang digunakan mencakup 15 arsitektur komparasi: model baseline linear, tree-based ensembles yang telah di-tuning via Optuna\cite{optuna} seperti XGBoost\cite{xgboost} dan CatBoost, arsitektur Deep Learning CAFF kustom berbasi atensi (Cross-Attention) menggunakan PyTorch\cite{pytorch}, metode canggih Zero-Shot In-Context Learning melalui TabICLv2\cite{tabicl}, serta penumpukan stacking menggunakan meta-learner Ridge.
 
 \section{KODE IMPLEMENTASI}
-Implementasi pemrograman seluruhnya dirangkai dalam \textit{Jupyter Notebook} dengan bahasa Python. Langkah-langkah utama meliputi lokalisasi \textit{return sweep}, isolasi wilayah tegangan (	extit{voltage window}) secara presisi (contohnya LC $V_{min} = -0.62$ hingga $V_{max} = -0.43$), perhitungan area trapezoidal, lebar pita setengah maksimum (FWHM), serta nilai skewness dan kurtosis pada kedua kutub (oksidasi dan reduksi).
+Implementasi pemrograman seluruhnya dirangkai dalam \textit{Jupyter Notebook} dengan bahasa Python. Langkah-langkah utama meliputi lokalisasi \textit{return sweep}, isolasi wilayah tegangan (\textit{voltage window}) secara presisi (contohnya LC $V_{min} = -0.62$ hingga $V_{max} = -0.43$), perhitungan area trapezoidal, lebar pita setengah maksimum (FWHM), serta nilai skewness dan kurtosis pada kedua kutub (oksidasi dan reduksi).
 
-Berikut diagram alir dari arsitektur *pipeline* yang dikembangkan:
+Berikut diagram alir dari arsitektur pipeline yang dikembangkan:
 
 \begin{figure}[H]
     \centering
@@ -90,42 +91,69 @@ Berikut diagram alir dari arsitektur *pipeline* yang dikembangkan:
 
 \subsection{Eksplorasi Data dan Deskripsi Fitur (EDA)}
 Tabel berikut merangkum deskripsi persebaran nilai ekstraksi dari 16 fitur Dual-Peak pada kedua instrumen:
-\begin{table}[H]\n\centering\n\caption{Deskripsi Fitur Sensor LC (Setelah Imputasi)}\n\label{tab:lc_stats}\n\resizebox{\textwidth}{!}{\n\begin{tabular}{@{}lr@{}}\n\toprule\n\textbf{Fitur/Model} & \textbf{mean	std	min	50%	max
-ppm	208.125000	309.341801	0.000000	50.000000	1000.000000
-upper_Ip_mean	8.430539	19.538610	0.709749	2.834180	88.769639
-upper_Ip_std	0.750218	0.904011	0.086310	0.450511	7.184330
-upper_Ep_mean	-0.541523	0.041233	-0.620000	-0.518750	-0.500000
-upper_Ep_std	0.014049	0.016032	0.000000	0.006960	0.058830
-upper_Area_mean	0.500604	1.220068	0.042642	0.155283	5.612287
-upper_FWHM_mean	0.057539	0.008969	0.040000	0.055000	0.100000
-upper_skewness	0.043566	0.525391	-1.426912	0.058839	1.751070
-upper_kurtosis	-0.678789	0.906082	-1.505126	-1.166908	2.615111
-lower_Ip_mean	43.997366	43.688143	17.973174	28.516098	217.792284
-lower_Ip_std	1.361553	1.908715	0.137375	0.739836	18.201608
-lower_Ep_mean	-0.795706	0.014585	-0.800000	-0.800000	-0.642500
-lower_Ep_std	0.002067	0.004893	0.000000	0.000000	0.062837
-lower_Area_mean	6.567825	6.075467	3.051835	4.362758	31.629153
-lower_FWHM_mean	0.000000	0.000000	0.000000	0.000000	0.000000
-lower_skewness	0.390287	0.470942	-1.494845	0.555018	1.357457
-lower_kurtosis	-0.195462	0.854349	-1.211072	-0.490465	4.085955} \\\n\midrule\n\bottomrule\n\end{tabular}\n}\n\end{table}\n
-\begin{table}[H]\n\centering\n\caption{Deskripsi Fitur Sensor PS (Setelah Imputasi)}\n\label{tab:ps_stats}\n\resizebox{\textwidth}{!}{\n\begin{tabular}{@{}lr@{}}\n\toprule\n\textbf{Fitur/Model} & \textbf{mean	std	min	50%	max
-ppm	208.632371	309.812736	0.000000	40.000000	1000.000000
-upper_Ip_mean	13.557990	9.752524	4.150540	11.993419	94.960037
-upper_Ip_std	0.676910	1.775550	0.016749	0.261878	27.381340
-upper_Ep_mean	-0.612767	0.080238	-0.770198	-0.640097	-0.508745
-upper_Ep_std	0.008037	0.016908	0.000000	0.003310	0.105171
-upper_Area_mean	2.334686	1.302799	0.579185	2.035140	10.233456
-upper_FWHM_mean	0.162820	0.019558	0.080062	0.158873	0.230179
-upper_skewness	-1.385005	0.685230	-2.978713	-1.512334	0.879842
-upper_kurtosis	2.080580	1.988813	-1.457411	1.778225	8.892112
-lower_Ip_mean	45.918064	19.450620	27.092913	40.202563	192.723356
-lower_Ip_std	1.446210	3.141528	0.012246	0.393147	47.318024
-lower_Ep_mean	-0.876745	0.018522	-0.890292	-0.880284	-0.772700
-lower_Ep_std	0.001319	0.004569	0.000000	0.000000	0.045035
-lower_Area_mean	8.103872	3.609664	5.014272	7.403152	38.853195
-lower_FWHM_mean	0.000000	0.000000	0.000000	0.000000	0.000000
-lower_skewness	-0.117577	0.512964	-1.631632	-0.056581	0.649130
-lower_kurtosis	-0.394841	0.643521	-1.328502	-0.560666	2.120147} \\\n\midrule\n\bottomrule\n\end{tabular}\n}\n\end{table}\n
+
+\begin{table}[H]
+\centering
+\caption{Deskripsi Fitur Sensor LC (Setelah Imputasi)}
+\label{tab:lc_stats}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+\textbf{Fitur/Model} & \textbf{mean} & \textbf{std} & \textbf{min} & \textbf{50\%} & \textbf{max} \\
+\midrule
+ppm & 208.125 & 309.342 & 0.000 & 50.000 & 1000.000 \\
+upper\_Ip\_mean & 8.431 & 19.539 & 0.710 & 2.834 & 88.770 \\
+upper\_Ip\_std & 0.750 & 0.904 & 0.086 & 0.451 & 7.184 \\
+upper\_Ep\_mean & -0.542 & 0.041 & -0.620 & -0.519 & -0.500 \\
+upper\_Ep\_std & 0.014 & 0.016 & 0.000 & 0.007 & 0.059 \\
+upper\_Area\_mean & 0.501 & 1.220 & 0.043 & 0.155 & 5.612 \\
+upper\_FWHM\_mean & 0.058 & 0.009 & 0.040 & 0.055 & 0.100 \\
+upper\_skewness & 0.044 & 0.525 & -1.427 & 0.059 & 1.751 \\
+upper\_kurtosis & -0.679 & 0.906 & -1.505 & -1.167 & 2.615 \\
+lower\_Ip\_mean & 43.997 & 43.688 & 17.973 & 28.516 & 217.792 \\
+lower\_Ip\_std & 1.362 & 1.909 & 0.137 & 0.740 & 18.202 \\
+lower\_Ep\_mean & -0.796 & 0.015 & -0.800 & -0.800 & -0.642 \\
+lower\_Ep\_std & 0.002 & 0.005 & 0.000 & 0.000 & 0.063 \\
+lower\_Area\_mean & 6.568 & 6.075 & 3.052 & 4.363 & 31.629 \\
+lower\_FWHM\_mean & 0.000 & 0.000 & 0.000 & 0.000 & 0.000 \\
+lower\_skewness & 0.390 & 0.471 & -1.495 & 0.555 & 1.357 \\
+lower\_kurtosis & -0.195 & 0.854 & -1.211 & -0.490 & 4.086 \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Deskripsi Fitur Sensor PS (Setelah Imputasi)}
+\label{tab:ps_stats}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+\textbf{Fitur/Model} & \textbf{mean} & \textbf{std} & \textbf{min} & \textbf{50\%} & \textbf{max} \\
+\midrule
+ppm & 208.632 & 309.813 & 0.000 & 40.000 & 1000.000 \\
+upper\_Ip\_mean & 13.558 & 9.753 & 4.151 & 11.993 & 94.960 \\
+upper\_Ip\_std & 0.677 & 1.776 & 0.017 & 0.262 & 27.381 \\
+upper\_Ep\_mean & -0.613 & 0.080 & -0.770 & -0.640 & -0.509 \\
+upper\_Ep\_std & 0.008 & 0.017 & 0.000 & 0.003 & 0.105 \\
+upper\_Area\_mean & 2.335 & 1.303 & 0.579 & 2.035 & 10.233 \\
+upper\_FWHM\_mean & 0.163 & 0.020 & 0.080 & 0.159 & 0.230 \\
+upper\_skewness & -1.385 & 0.685 & -2.979 & -1.512 & 0.880 \\
+upper\_kurtosis & 2.081 & 1.989 & -1.457 & 1.778 & 8.892 \\
+lower\_Ip\_mean & 45.918 & 19.451 & 27.093 & 40.203 & 192.723 \\
+lower\_Ip\_std & 1.446 & 3.142 & 0.012 & 0.393 & 47.318 \\
+lower\_Ep\_mean & -0.877 & 0.019 & -0.890 & -0.880 & -0.773 \\
+lower\_Ep\_std & 0.001 & 0.005 & 0.000 & 0.000 & 0.045 \\
+lower\_Area\_mean & 8.104 & 3.610 & 5.014 & 7.403 & 38.853 \\
+lower\_FWHM\_mean & 0.000 & 0.000 & 0.000 & 0.000 & 0.000 \\
+lower\_skewness & -0.118 & 0.513 & -1.632 & -0.057 & 0.649 \\
+lower\_kurtosis & -0.395 & 0.644 & -1.329 & -0.561 & 2.120 \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
 
 Heatmap korelasi memperlihatkan interdependensi kuat antara variabel \textit{current} (I) dengan besaran konsentrasi.
 \begin{figure}[H]
@@ -149,34 +177,60 @@ Heatmap korelasi memperlihatkan interdependensi kuat antara variabel \textit{cur
 \subsection{Evaluasi Metrik Performa Model}
 Pengujian menggunakan metode \textit{Stratified 5-Fold CV} memastikan distribusi rentang konsentrasi merata di setiap *fold* evaluasi. Berikut adalah tabel komparasi peringkat seluruh model yang dilatih:
 
-\begin{table}[H]\n\centering\n\caption{Peringkat Evaluasi Model Regresi (Sensor LC)}\n\label{tab:lc_models}\n\resizebox{\textwidth}{!}{\n\begin{tabular}{@{}lr@{}}\n\toprule\n\textbf{Fitur/Model} & \textbf{R2	RMSE	MAE	MAPE
-11. TabICLv2	9.970486e-01	1.668396e+01	2.699991e+00	0.017123
-10. CatBoost_Tuned	9.482524e-01	6.957326e+01	2.624783e+01	0.169911
-7. ExtraTrees	9.437108e-01	7.223605e+01	2.440696e+01	0.169095
-8. XGBoost_Tuned	9.429786e-01	7.234562e+01	2.522889e+01	0.191863
-6. RandomForest	9.381329e-01	7.361420e+01	2.458002e+01	0.209213
-9. LightGBM_Tuned	9.310752e-01	7.957052e+01	3.340116e+01	0.230981
-13. CAFF_Tuned	8.913909e-01	1.009321e+02	4.737880e+01	0.288011
-12. CAFF	7.952697e-01	1.354709e+02	6.870707e+01	0.422156
-5. SVR	6.738770e-01	1.749995e+02	7.972337e+01	0.794115
-3. ElasticNet	2.953186e-01	2.592770e+02	1.463610e+02	2.493792
-2. Ridge	-1.111416e+00	3.845932e+02	1.534755e+02	2.437840
-1. LinearRegression	-9.532611e+00	7.618929e+02	2.267585e+02	2.984260
-4. PolyRidge	-8.668431e+11	1.287309e+08	1.439236e+07	38380.665810} \\\n\midrule\n\bottomrule\n\end{tabular}\n}\n\end{table}\n
-\begin{table}[H]\n\centering\n\caption{Peringkat Evaluasi Model Regresi (Sensor PS)}\n\label{tab:ps_models}\n\resizebox{\textwidth}{!}{\n\begin{tabular}{@{}lr@{}}\n\toprule\n\textbf{Fitur/Model} & \textbf{R2	RMSE	MAE	MAPE
-11. TabICLv2	9.918507e-01	2.620922e+01	4.885186e+00	3.541805e-02
-10. CatBoost_Tuned	8.625573e-01	1.133155e+02	4.292904e+01	2.876881e-01
-9. LightGBM_Tuned	8.078226e-01	1.353222e+02	5.543142e+01	4.415865e-01
-7. ExtraTrees	8.071439e-01	1.346568e+02	4.501273e+01	2.706228e-01
-8. XGBoost_Tuned	7.945163e-01	1.387889e+02	5.297698e+01	3.223620e-01
-6. RandomForest	7.710746e-01	1.477430e+02	5.340337e+01	4.327345e-01
-12. CAFF	6.566113e-01	1.812861e+02	8.329385e+01	4.504011e-01
-13. CAFF_Tuned	4.943275e-01	2.198866e+02	1.079127e+02	4.533558e-01
-5. SVR	-3.686583e+00	5.479590e+02	1.281031e+02	5.954777e-01
-3. ElasticNet	-7.057141e+03	1.188534e+04	1.089717e+03	3.660321e+00
-1. LinearRegression	-2.483284e+08	2.184290e+06	1.733671e+05	3.102263e+02
-2. Ridge	-2.540692e+08	2.209366e+06	1.753499e+05	3.137796e+02
-4. PolyRidge	-1.928897e+102	1.925144e+53	1.526738e+52	1.629204e+49} \\\n\midrule\n\bottomrule\n\end{tabular}\n}\n\end{table}\n
+\begin{table}[H]
+\centering
+\caption{Peringkat Evaluasi Model Regresi (Sensor LC)}
+\label{tab:lc_models}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+\textbf{Fitur/Model} & \textbf{R2} & \textbf{RMSE} & \textbf{MAE} & \textbf{MAPE} \\
+\midrule
+11. TabICLv2 & 0.997 & 16.684 & 2.700 & 0.017 \\
+10. CatBoost\_Tuned & 0.948 & 69.573 & 26.248 & 0.170 \\
+7. ExtraTrees & 0.944 & 72.236 & 24.407 & 0.169 \\
+8. XGBoost\_Tuned & 0.943 & 72.346 & 25.229 & 0.192 \\
+6. RandomForest & 0.938 & 73.614 & 24.580 & 0.209 \\
+9. LightGBM\_Tuned & 0.931 & 79.571 & 33.401 & 0.231 \\
+13. CAFF\_Tuned & 0.891 & 100.932 & 47.379 & 0.288 \\
+12. CAFF & 0.795 & 135.471 & 68.707 & 0.422 \\
+5. SVR & 0.674 & 175.000 & 79.723 & 0.794 \\
+3. ElasticNet & 0.295 & 259.277 & 146.361 & 2.494 \\
+2. Ridge & -1.111 & 384.593 & 153.476 & 2.438 \\
+1. LinearRegression & -9.533 & 761.893 & 226.758 & 2.984 \\
+4. PolyRidge & -8.67e+11 & 1.29e+08 & 1.44e+07 & 3.84e+04 \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Peringkat Evaluasi Model Regresi (Sensor PS)}
+\label{tab:ps_models}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+\textbf{Fitur/Model} & \textbf{R2} & \textbf{RMSE} & \textbf{MAE} & \textbf{MAPE} \\
+\midrule
+11. TabICLv2 & 0.992 & 26.209 & 4.885 & 0.035 \\
+10. CatBoost\_Tuned & 0.863 & 113.316 & 42.929 & 0.288 \\
+9. LightGBM\_Tuned & 0.808 & 135.322 & 55.431 & 0.442 \\
+7. ExtraTrees & 0.807 & 134.657 & 45.013 & 0.271 \\
+8. XGBoost\_Tuned & 0.795 & 138.789 & 52.977 & 0.322 \\
+6. RandomForest & 0.771 & 147.743 & 53.403 & 0.433 \\
+12. CAFF & 0.657 & 181.286 & 83.294 & 0.450 \\
+13. CAFF\_Tuned & 0.494 & 219.887 & 107.913 & 0.453 \\
+5. SVR & -3.687 & 547.959 & 128.103 & 0.595 \\
+3. ElasticNet & -7.06e+03 & 1.19e+04 & 1.09e+03 & 3.660 \\
+1. LinearRegression & -2.48e+08 & 2.18e+06 & 1.73e+05 & 310.226 \\
+2. Ridge & -2.54e+08 & 2.21e+06 & 1.75e+05 & 313.780 \\
+4. PolyRidge & -1.93e+102 & 1.93e+53 & 1.53e+52 & 1.63e+49 \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
 
 \begin{figure}[H]
     \centering
@@ -207,10 +261,10 @@ Untuk menginspeksi seberapa besar penyimpangan (*error*) antara nilai aktual den
     \caption{Distribusi Error Residual Berdasarkan Rentang Konsentrasi}
 \end{figure}
 
-Residual plot memperlihatkan pelebaran *error* (	extit{heteroscedasticity}) di rentang konsentrasi tinggi (100-1000 ppm) baik di LC maupun PS, dikarenakan sifat elektrokimia yang saturasi (kemacetan transfer massa pada elektrode). Kendati demikian, di rentang kritikal (0-10 ppm) yang krusial untuk deteksi awal tingkat toksisitas air, instrumen LC menunjukan stabilitas prediksi yang sangat presisi dengan garis simpangan yang amat tipis mendekati sumbu nol.
+Residual plot memperlihatkan pelebaran *error* (\textit{heteroscedasticity}) di rentang konsentrasi tinggi (100-1000 ppm) baik di LC maupun PS, dikarenakan sifat elektrokimia yang saturasi (kemacetan transfer massa pada elektrode). Kendati demikian, di rentang kritikal (0-10 ppm) yang krusial untuk deteksi awal tingkat toksisitas air, instrumen LC menunjukan stabilitas prediksi yang sangat presisi dengan garis simpangan yang amat tipis mendekati sumbu nol.
 
 \subsection{Interpretasi Model dengan SHAP}
-Pendekatan \textit{SHapley Additive exPlanations} (SHAP)\cite{shap} diterapkan pada model *XGBoost* untuk membedah *Feature Importance* secara transparan.
+Pendekatan \textit{SHapley Additive exPlanations} (SHAP)\cite{shap} diterapkan pada model XGBoost untuk membedah *Feature Importance* secara transparan.
 
 \begin{figure}[H]
     \centering
@@ -229,7 +283,7 @@ Pendekatan \textit{SHapley Additive exPlanations} (SHAP)\cite{shap} diterapkan p
 Interpretasi SHAP selaras dengan hukum fisikokimia dasar. Atribut \texttt{upper\_Ip\_mean} dan \texttt{upper\_Area\_mean} mendominasi keputusan model secara signifikan. Hal ini tervalidasi secara teoritis oleh Persamaan Randles-Sevcik, di mana *peak current* ($I_p$) dan luasan area di bawah kurva selalu berkorelasi linier dengan massa logam (molar) yang ter-oksidasi selama siklus voltammetri.
 
 \section{KESIMPULAN}
-Penelitian ini berhasil menyimpulkan keunggulan 	extbf{sensor rakitan LC (LecSens)} dibandingkan instrumen komersial EmStat4 (PS). Tiga temuan krusial yang dicatat:
+Penelitian ini berhasil menyimpulkan keunggulan \textbf{sensor rakitan LC (LecSens)} dibandingkan instrumen komersial EmStat4 (PS). Tiga temuan krusial yang dicatat:
 \begin{enumerate}
     \item \textbf{Performa Regresi Superior:} Dengan memanfaatkan *Foundation Model* TabICLv2 dan metode ensemble XGBoost, instrumen LC mampu menembus skor determinasi $R^2$ hingga di atas 0.94, jauh meninggalkan skor puncak sensor PS.
     \item \textbf{Stabilitas Signal:} Penilaian stabilitas (*boxplot* antar *fold*) memperlihatkan bahwa rasio S/N (*Signal to Noise*) dari LC memfasilitasi algoritma *decision trees* untuk belajar secara optimal tanpa jatuh pada jeratan *overfitting* yang drastis.
