@@ -118,7 +118,7 @@ for train_idx, val_idx in skf.split(X_scaled, labels_ppm):
 \end{lstlisting}
 
 \subsection{Ensemble Stacking Regressor}
-Model tingkat lanjut dirangkai menggunakan arsitektur 	extit{Stacking}. Model-model pohon yang sudah di-*tuning* via Optuna digabungkan prediksinya melalui *meta-learner* Ridge Regression untuk mengkoreksi *error* antar model *base*.
+Model tingkat lanjut dirangkai menggunakan arsitektur \textit{Stacking}. Model-model pohon yang sudah di-*tuning* via Optuna digabungkan prediksinya melalui *meta-learner* Ridge Regression untuk mengkoreksi *error* antar model *base*.
 
 \begin{lstlisting}[language=Python, caption=Arsitektur Stacking Regressor]
 from sklearn.ensemble import StackingRegressor
@@ -142,13 +142,13 @@ stacking_model = StackingRegressor(
 \section{HASIL VISUALISASI DAN EVALUASI}
 
 \subsection{Eksplorasi Data dan Deskripsi Fitur (EDA)}
-Tabel 1 dan Tabel 2 merangkum deskripsi persebaran nilai ekstraksi dari 16 fitur Dual-Peak pada kedua instrumen.
+Tabel 1 dan Tabel 2 merangkum deskripsi persebaran nilai ekstraksi dari 16 fitur Dual-Peak pada kedua instrumen. Berkat opsi [H], tabel ini dijamin muncul tepat di bawah paragraf ini.
 
-\begin{table*}[t]
+\begin{table}[H]
 \centering
 \caption{Deskripsi Fitur Sensor LC (Setelah Imputasi)}
 \label{tab:lc_stats}
-\resizebox{\textwidth}{!}{
+\resizebox{\columnwidth}{!}{
 \begin{tabular}{@{}lrrrrr@{}}
 \toprule
 \textbf{Fitur/Model} & \textbf{mean} & \textbf{std} & \textbf{min} & \textbf{50\%} & \textbf{max} \\
@@ -173,13 +173,13 @@ lower\_kurtosis & -0.195 & 0.854 & -1.211 & -0.490 & 4.086 \\
 \bottomrule
 \end{tabular}
 }
-\end{table*}
+\end{table}
 
-\begin{table*}[t]
+\begin{table}[H]
 \centering
 \caption{Deskripsi Fitur Sensor PS (Setelah Imputasi)}
 \label{tab:ps_stats}
-\resizebox{\textwidth}{!}{
+\resizebox{\columnwidth}{!}{
 \begin{tabular}{@{}lrrrrr@{}}
 \toprule
 \textbf{Fitur/Model} & \textbf{mean} & \textbf{std} & \textbf{min} & \textbf{50\%} & \textbf{max} \\
@@ -204,24 +204,24 @@ lower\_kurtosis & -0.395 & 0.644 & -1.329 & -0.561 & 2.120 \\
 \bottomrule
 \end{tabular}
 }
-\end{table*}
+\end{table}
 
 
 Heatmap korelasi pada Gambar 1 memperlihatkan interdependensi kuat antara variabel \textit{current} (I) dengan besaran konsentrasi.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
     \centering
     \includegraphics[width=\columnwidth]{output/phase3_korelasi.png}
     \caption{Heatmap Korelasi Pearson (16 Fitur)}
 \end{figure}
 
-\begin{figure}[htbp]
+\begin{figure}[H]
     \centering
     \includegraphics[width=\columnwidth]{output/phase3_boxplot_ppm.png}
     \caption{Boxplot Sebaran Arus Puncak (Ip Mean)}
 \end{figure}
 
-\begin{figure}[htbp]
+\begin{figure}[H]
     \centering
     \includegraphics[width=\columnwidth]{output/phase3_calibration_curve.png}
     \caption{Kurva Kalibrasi LC vs PS}
@@ -230,11 +230,11 @@ Heatmap korelasi pada Gambar 1 memperlihatkan interdependensi kuat antara variab
 \subsection{Evaluasi Metrik Performa Model}
 Pengujian menggunakan metode \textit{Stratified 5-Fold CV} memastikan distribusi merata di setiap *fold* evaluasi. Berikut adalah tabel komparasi peringkat seluruh model:
 
-\begin{table*}[t]
+\begin{table}[H]
 \centering
 \caption{Peringkat Evaluasi Model Regresi (Sensor LC)}
 \label{tab:lc_models}
-\resizebox{\textwidth}{!}{
+\resizebox{\columnwidth}{!}{
 \begin{tabular}{@{}lrrrr@{}}
 \toprule
 \textbf{Fitur/Model} & \textbf{R2} & \textbf{RMSE} & \textbf{MAE} & \textbf{MAPE} \\
@@ -255,13 +255,13 @@ Pengujian menggunakan metode \textit{Stratified 5-Fold CV} memastikan distribusi
 \bottomrule
 \end{tabular}
 }
-\end{table*}
+\end{table}
 
-\begin{table*}[t]
+\begin{table}[H]
 \centering
 \caption{Peringkat Evaluasi Model Regresi (Sensor PS)}
 \label{tab:ps_models}
-\resizebox{\textwidth}{!}{
+\resizebox{\columnwidth}{!}{
 \begin{tabular}{@{}lrrrr@{}}
 \toprule
 \textbf{Fitur/Model} & \textbf{R2} & \textbf{RMSE} & \textbf{MAE} & \textbf{MAPE} \\
@@ -282,16 +282,16 @@ Pengujian menggunakan metode \textit{Stratified 5-Fold CV} memastikan distribusi
 \bottomrule
 \end{tabular}
 }
-\end{table*}
+\end{table}
 
 
-\begin{figure}[htbp]
+\begin{figure}[H]
     \centering
     \includegraphics[width=\columnwidth]{output/phase6_barchart_r2.png}
     \caption{Perbandingan Metrik $R^2$ Seluruh Model}
 \end{figure}
 
-\begin{figure}[htbp]
+\begin{figure}[H]
     \centering
     \includegraphics[width=\columnwidth]{output/phase6_boxplot_r2_fold.png}
     \caption{Stabilitas $R^2$ per Fold (Top 5 Model)}
@@ -302,36 +302,34 @@ Pengujian menggunakan metode \textit{Stratified 5-Fold CV} memastikan distribusi
 \subsection{Ketepatan Prediksi (Parity \& Residual Plot)}
 Untuk menginspeksi seberapa besar penyimpangan (*error*), kami menggunakan metrik \textit{Parity Plot} dan distribusi \textit{Residual}.
 
-\begin{figure*}[t]
+\begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{output/phase6_parity_plot.png}
+    \includegraphics[width=\columnwidth]{output/phase6_parity_plot.png}
     \caption{Parity Plot Prediksi Konsentrasi Kadmium dari Model Terbaik}
-\end{figure*}
+\end{figure}
 
-\begin{figure*}[t]
+\begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{output/phase6_residual_plot.png}
+    \includegraphics[width=\columnwidth]{output/phase6_residual_plot.png}
     \caption{Distribusi Error Residual Berdasarkan Rentang Konsentrasi}
-\end{figure*}
+\end{figure}
 
 Residual plot memperlihatkan pelebaran *error* (\textit{heteroscedasticity}) di rentang konsentrasi tinggi (100-1000 ppm) baik di LC maupun PS, dikarenakan sifat elektrokimia yang saturasi (kemacetan transfer massa pada elektrode). Kendati demikian, di rentang kritikal (0-10 ppm) yang krusial untuk deteksi awal tingkat toksisitas air, instrumen LC menunjukan stabilitas prediksi yang sangat presisi dengan garis simpangan yang amat tipis.
 
 \subsection{Interpretasi Model dengan SHAP}
 Pendekatan \textit{SHapley Additive exPlanations} (SHAP)\cite{shap} diterapkan pada model XGBoost untuk membedah *Feature Importance* secara transparan.
 
-\begin{figure*}[t]
+\begin{figure}[H]
     \centering
-    \begin{minipage}{0.48\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{output/phase6_shap_lc.png}
-        \caption{SHAP Summary Plot (LC)}
-    \end{minipage}\hfill
-    \begin{minipage}{0.48\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{output/phase6_shap_ps.png}
-        \caption{SHAP Summary Plot (PS)}
-    \end{minipage}
-\end{figure*}
+    \includegraphics[width=\columnwidth]{output/phase6_shap_lc.png}
+    \caption{SHAP Summary Plot (LC)}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\columnwidth]{output/phase6_shap_ps.png}
+    \caption{SHAP Summary Plot (PS)}
+\end{figure}
 
 Interpretasi SHAP selaras dengan hukum fisikokimia dasar. Atribut \texttt{upper\_Ip\_mean} dan \texttt{upper\_Area\_mean} mendominasi keputusan model secara signifikan. Hal ini tervalidasi secara teoritis oleh Persamaan Randles-Sevcik.
 
@@ -342,8 +340,6 @@ Penelitian ini berhasil menyimpulkan keunggulan \textbf{sensor rakitan LC (LecSe
     \item \textbf{Stabilitas Signal:} Penilaian stabilitas (*boxplot* antar *fold*) memperlihatkan bahwa rasio S/N (*Signal to Noise*) dari LC memfasilitasi algoritma regresi untuk belajar secara optimal.
     \item \textbf{Akurasi Rentang Rendah:} Kemampuan sensor LC dalam mendeteksi konsentrasi renik (0-10 ppm) terlihat secara jelas pada inspeksi plot residual, yang menjadikannya *cost-effective solution*.
 \end{enumerate}
-
-\clearpage
 
 \begin{thebibliography}{99}
 \bibitem{dosen} Materi Perkuliahan Artificial Intelligence dan Data Science, Departemen Teknologi Informasi, Institut Teknologi Sepuluh Nopember, 2026.
