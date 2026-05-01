@@ -1,0 +1,9 @@
+Parameter,LC (LecSens),PS (EmStat4),Selisih (LC−PS)
+Model Terbaik,XGBoost,XGBoost,—
+Best R² (5-Fold CV),0.8232,0.5794,+0.2438
+Best RMSE (ppm),127.85,199.54,-71.70
+Best MAE (ppm),69.99,112.41,-42.41
+Best MAPE (%),520.08,666.33,-146.25
+Slope Kalibrasi Linear (µA/ppm),0.01568,-0.00372,—
+R² Kalibrasi Linear,0.5748,0.0108,+0.5640
+Mean RSD% (Repeatabilitas),33.54,24.46,+9.08
